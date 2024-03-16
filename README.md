@@ -1,4 +1,4 @@
-# LFIDump
+![](./.github/banner.png)
 
 <p align="center">
     A simple python script to dump remote files through a local file read or local file inclusion web vulnerability.
