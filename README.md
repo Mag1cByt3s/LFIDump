@@ -18,6 +18,7 @@
  - [x] Dump lots of files from a wordlist with `-F /path/to/local/wordlist.txt`
  - [x] Insecure mode (for broken SSL/TLS) with `-k/--insecure`
  - [x] Custom local dump dir with `-d/--dump-dir`
+ - [x] Specify authorization header with `-a/--auth-header`
 
 ## Usage
 
@@ -38,6 +39,8 @@ optional arguments:
   -D DUMP_DIR, --dump-dir DUMP_DIR
                         Directory where the dumped files will be stored.
   -k, --insecure        Allow insecure server connections when using SSL (default: False)
+  -a AUTH_HEADER, --auth-header AUTH_HEADER
+                        Authorization header value (Bearer token).
 ```
 
 ## Examples

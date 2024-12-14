@@ -62,7 +62,7 @@ def parseArgs():
 
     parser.add_argument("-D", "--dump-dir", dest="dump_dir", action="store", type=str, default="./loot/", required=False, help="Directory where the dumped files will be stored.")
     parser.add_argument("-k", "--insecure", dest="insecure_tls", action="store_true", default=False, help="Allow insecure server connections when using SSL (default: False)")
-    parser.add_argument("--auth-header", dest="auth_header", action="store", type=str, required=False, help="Authorization header value (Bearer token).")
+    parser.add_argument("-a", "--auth-header", dest="auth_header", action="store", type=str, required=False, help="Authorization header value (Bearer token).")
 
     return parser.parse_args()
 
